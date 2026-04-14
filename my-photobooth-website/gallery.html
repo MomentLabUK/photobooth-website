@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Client Gallery | Moment Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --black:   #0a0a0a;
+    --dark:    #121212;
+    --card:    #1a1a1a;
+    --gold:    #c9a84c;
+    --gold-lt: #e2c97e;
+    --cream:   #f5f0e8;
+    --muted:   #888;
+    --error:   #e05555;
+    --border:  rgba(201,168,76,.2);
+    --ff-display: 'Cormorant Garamond', Georgia, serif;
+    --ff-body:    'DM Sans', sans-serif;
+    --ease: cubic-bezier(.25,.46,.45,.94);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--cream);
+    font-family: var(--ff-body);
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 18px 40px;
+    background: rgba(10,10,10,.96);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--ff-display); font-size: 1.4rem;
+    font-weight: 400; letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+  }
+  .nav-logo img { height: 48px; width: auto; }
+  .nav-logo span { color: var(--gold); }
+  .nav-back {
+    font-size: .75rem; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 8px;
+    transition: color .2s;
+  }
+  .nav-back:hover { color: var(--gold); }
+
+  /* ── PASSWORD SCREEN ── */
+  #password-screen {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 100px 24px 60px;
+    position: relative; overflow: hidden;
+  }
+  .pw-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 50%, rgba(201,168,76,.06) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,.015) 59px, rgba(255,255,255,.015) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,.015) 59px, rgba(255,255,255,.015) 60px);
+  }
+  .pw-box {
+    position: relative; z-index: 1;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 56px 52px; max-width: 460px; width: 100%; text-align: center;
+  }
+  .pw-box::before {
+    content: '';
+    position: absolute; inset: -1px;
+    background: linear-gradient(135deg, rgba(201,168,76,.2), transparent 60%);
+    pointer-events: none;
+  }
+  .pw-icon { font-size: 2.4rem; margin-bottom: 20px; }
+  .pw-label {
+    font-size: .7rem; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px;
+  }
+  .pw-title {
+    font-family: var(--ff-display); font-size: 2.2rem; font-weight: 300;
+    line-height: 1.2; margin-bottom: 12px;
+  }
+  .pw-sub { font-size: .85rem; color: var(--muted); margin-bottom: 36px; line-height: 1.7; }
+  .pw-input-wrap { position: relative; margin-bottom: 12px; }
+  .pw-input {
+    width: 100%; background: var(--dark); border: 1px solid var(--border);
+    color: var(--cream); padding: 15px 48px 15px 18px;
+    font-family: var(--ff-body); font-size: 1rem; letter-spacing: .12em;
+    text-align: center; text-transform: uppercase; outline: none;
+    transition: border-color .2s; border-radius: 0;
+  }
+  .pw-input:focus { border-color: var(--gold); }
+  .pw-input.error { border-color: var(--error); animation: shake .3s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+  }
+  .pw-toggle {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; font-size: 1rem;
+    color: var(--muted); padding: 4px;
+  }
+  .pw-error {
+    font-size: .78rem; color: var(--error); margin-bottom: 14px;
+    min-height: 20px; transition: opacity .2s;
+  }
+  .pw-btn {
+    width: 100%; padding: 15px; background: var(--gold); color: var(--black);
+    border: none; font-family: var(--ff-body); font-size: .82rem;
+    font-weight: 500; letter-spacing: .18em; text-transform: uppercase;
+    cursor: pointer; transition: background .2s;
+  }
+  .pw-btn:hover { background: var(--gold-lt); }
+  .pw-hint { font-size: .72rem; color: var(--muted); margin-top: 20px; }
+
+  /* ── GALLERY SCREEN ── */
+  #gallery-screen { display: none; padding-top: 80px; }
+  .gallery-hero {
+    padding: 60px 40px 48px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+  }
+  .gallery-welcome {
+    font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 8px;
+  }
+  .gallery-title {
+    font-family: var(--ff-display); font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 300; line-height: 1.1;
+  }
+  .gallery-meta {
+    display: flex; gap: 28px; flex-wrap: wrap; margin-top: 16px;
+  }
+  .meta-item {
+    display: flex; flex-direction: column;
+  }
+  .meta-key { font-size: .65rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .meta-val { font-size: .9rem; color: var(--cream); }
+  .gallery-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; font-family: var(--ff-body); font-size: .78rem;
+    font-weight: 500; letter-spacing: .13em; text-transform: uppercase;
+    border: 1px solid var(--gold); color: var(--gold); background: transparent;
+    cursor: pointer; transition: background .25s, color .25s;
+  }
+  .btn:hover { background: var(--gold); color: var(--black); }
+  .btn-fill { background: var(--gold); color: var(--black); }
+  .btn-fill:hover { background: var(--gold-lt); border-color: var(--gold-lt); }
+  .btn-sm { padding: 8px 16px; font-size: .72rem; }
+
+  /* Filter bar */
+  .filter-bar {
+    padding: 20px 40px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .filter-label { font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+  .filter-btn {
+    padding: 6px 18px; border: 1px solid var(--border); background: none;
+    color: var(--muted); font-family: var(--ff-body); font-size: .75rem;
+    letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+    transition: border-color .2s, color .2s;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--gold); color: var(--gold); }
+  .photo-count {
+    margin-left: auto; font-size: .78rem; color: var(--muted);
+  }
+
+  /* Photo grid */
+  .gallery-grid {
+    padding: 32px 40px 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 3px;
+  }
+  .photo-item {
+    position: relative; overflow: hidden;
+    aspect-ratio: 4/3; background: var(--card);
+    cursor: pointer;
+  }
+  .photo-item.portrait { aspect-ratio: 2/3; }
+  .photo-item img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .5s var(--ease), filter .4s;
+    filter: brightness(.92);
+  }
+  .photo-item:hover img { transform: scale(1.05); filter: brightness(.6); }
+  .photo-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    opacity: 0; transition: opacity .3s;
+  }
+  .photo-item:hover .photo-overlay { opacity: 1; }
+  .photo-action {
+    width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.6);
+    background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; cursor: pointer; color: white;
+    transition: border-color .2s, background .2s;
+    text-decoration: none;
+  }
+  .photo-action:hover { border-color: var(--gold); background: var(--gold); color: var(--black); }
+  .photo-num {
+    position: absolute; top: 10px; left: 12px;
+    font-size: .65rem; letter-spacing: .1em;
+    background: rgba(0,0,0,.6); color: var(--muted);
+    padding: 3px 8px;
+  }
+
+  /* Placeholder photo tiles (before real images are added) */
+  .photo-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; color: rgba(255,255,255,.15); font-size: .72rem;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+  .ph-icon { font-size: 2rem; opacity: .3; }
+
+  /* Lightbox */
+  #lightbox {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.95);
+    flex-direction: column; align-items: center; justify-content: center;
+  }
+  #lightbox.open { display: flex; }
+  .lb-close {
+    position: absolute; top: 20px; right: 28px;
+    font-size: 1.6rem; cursor: pointer; color: var(--muted);
+    transition: color .2s; z-index: 1;
+  }
+  .lb-close:hover { color: var(--cream); }
+  .lb-img-wrap {
+    max-width: 90vw; max-height: 80vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #lb-img {
+    max-width: 90vw; max-height: 78vh;
+    object-fit: contain;
+  }
+  .lb-placeholder {
+    width: 600px; max-width: 90vw; height: 400px;
+    background: var(--card); display: flex; align-items: center;
+    justify-content: center; flex-direction: column; gap: 12px;
+    color: var(--muted); font-size: .9rem;
+  }
+  .lb-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; max-width: 700px; padding: 16px 0 0;
+  }
+  .lb-info { font-size: .8rem; color: var(--muted); }
+  .lb-info strong { color: var(--cream); }
+  .lb-nav { display: flex; gap: 10px; }
+  .lb-nav button {
+    width: 40px; height: 40px; border: 1px solid var(--border);
+    background: none; color: var(--cream); font-size: 1rem; cursor: pointer;
+    transition: border-color .2s, color .2s;
+  }
+  .lb-nav button:hover { border-color: var(--gold); color: var(--gold); }
+  #lb-download {
+    padding: 10px 24px; border: 1px solid var(--gold);
+    background: var(--gold); color: var(--black); font-family: var(--ff-body);
+    font-size: .72rem; letter-spacing: .15em; text-transform: uppercase;
+    font-weight: 500; cursor: pointer; transition: background .2s;
+  }
+  #lb-download:hover { background: var(--gold-lt); }
+
+  /* Lock icon on gallery screen when logging out */
+  .logout-btn {
+    font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 6px;
+    background: none; border: none; font-family: var(--ff-body);
+    transition: color .2s;
+  }
+  .logout-btn:hover { color: var(--gold); }
+
+  /* Download all progress */
+  #dl-progress {
+    display: none; position: fixed; bottom: 28px; right: 28px; z-index: 150;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 18px 24px; min-width: 240px;
+  }
+  .dl-title { font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .dl-bar-wrap { background: rgba(255,255,255,.06); height: 3px; }
+  .dl-bar { height: 3px; background: var(--gold); transition: width .3s; width: 0%; }
+  .dl-text { font-size: .75rem; color: var(--muted); margin-top: 8px; }
+
+  /* Empty state */
+  .empty-state {
+    padding: 80px 40px; text-align: center; color: var(--muted);
+  }
+  .empty-state .e-icon { font-size: 3rem; margin-bottom: 16px; opacity: .4; }
+  .empty-state h3 { font-family: var(--ff-display); font-size: 1.5rem; font-weight: 300; margin-bottom: 8px; }
+  .empty-state p { font-size: .85rem; }
+
+  @media (max-width: 600px) {
+    nav { padding: 14px 20px; }
+    .pw-box { padding: 40px 28px; }
+    .gallery-hero { padding: 40px 20px 32px; }
+    .filter-bar, .gallery-grid { padding-left: 20px; padding-right: 20px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo"><img src="images/logo.svg" alt="Moment Lab"></a>
+  <a href="index.html" class="nav-back">← Back to Website</a>
+</nav>
+
+<!-- PASSWORD SCREEN -->
+<div id="password-screen">
+  <div class="pw-bg"></div>
+  <div class="pw-box">
+    <div class="pw-icon">🔐</div>
+    <div class="pw-label">Client Portal</div>
+    <h1 class="pw-title">Your Photos<br/>Are Ready</h1>
+    <p class="pw-sub">Enter the unique password we sent you to access and download your event gallery.</p>
+    <div class="pw-input-wrap">
+      <input
+        type="password"
+        id="pw-input"
+        class="pw-input"
+        placeholder="ENTER PASSWORD"
+        maxlength="30"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') checkPassword()"
+      />
+      <button class="pw-toggle" onclick="togglePw()" id="pw-eye" title="Show/hide password">👁</button>
+    </div>
+    <div class="pw-error" id="pw-error"></div>
+    <button class="pw-btn" onclick="checkPassword()">Access My Gallery</button>
+    <p class="pw-hint">Password not working? Email hello@flashandframe.co.uk</p>
+  </div>
+</div>
+
+<!-- GALLERY SCREEN -->
+<div id="gallery-screen">
+
+  <!-- Header -->
+  <div class="gallery-hero">
+    <div>
+      <div class="gallery-welcome">Welcome back</div>
+      <div class="gallery-title" id="gallery-title">Sarah & James — Wedding</div>
+      <div class="gallery-meta">
+        <div class="meta-item"><span class="meta-key">Date</span><span class="meta-val" id="gallery-date">—</span></div>
+        <div class="meta-item"><span class="meta-key">Venue</span><span class="meta-val" id="gallery-venue">—</span></div>
+        <div class="meta-item"><span class="meta-key">Photos</span><span class="meta-val" id="gallery-count">—</span></div>
+        <div class="meta-item"><span class="meta-key">Available Until</span><span class="meta-val" id="gallery-expiry">—</span></div>
+      </div>
+    </div>
+    <div class="gallery-actions">
+      <button class="btn btn-fill" onclick="downloadAll()">⬇ Download All</button>
+      <button class="logout-btn" onclick="logout()">🔒 Log Out</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <span class="filter-label">View:</span>
+    <button class="filter-btn active" onclick="filterPhotos('all', this)">All Photos</button>
+    <button class="filter-btn" onclick="filterPhotos('favourite', this)">⭐ Favourites</button>
+    <span class="photo-count" id="photo-count-label">— photos</span>
+  </div>
+
+  <!-- Grid -->
+  <div class="gallery-grid" id="gallery-grid"></div>
+
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <span class="lb-close" onclick="closeLightbox()">✕</span>
+  <div class="lb-img-wrap">
+    <img id="lb-img" src="" alt="" style="display:none" />
+    <div class="lb-placeholder" id="lb-placeholder">
+      <div style="font-size:3rem">🖼️</div>
+      <div id="lb-placeholder-text">Photo preview</div>
+    </div>
+  </div>
+  <div class="lb-bar">
+    <div class="lb-info">Photo <strong id="lb-num">1</strong> of <strong id="lb-total">1</strong></div>
+    <button id="lb-download" onclick="downloadCurrent()">⬇ Download Photo</button>
+    <div class="lb-nav">
+      <button onclick="lbNav(-1)">‹</button>
+      <button onclick="lbNav(1)">›</button>
+    </div>
+  </div>
+</div>
+
+<!-- Download progress toast -->
+<div id="dl-progress">
+  <div class="dl-title">Preparing Download…</div>
+  <div class="dl-bar-wrap"><div class="dl-bar" id="dl-bar"></div></div>
+  <div class="dl-text" id="dl-text">Starting…</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+  📋 GALLERY CONFIGURATION — EDIT THIS SECTION TO ADD CLIENTS
+  ═══════════════════════════════════════════════════════════
+
+  HOW TO ADD A CLIENT:
+  1. Copy one of the example entries below
+  2. Change the password, name, date, venue, expiry
+  3. Add photo filenames to the "photos" array
+  4. Upload the actual photo files to your images/gallery/ folder
+
+  PHOTO FORMAT:
+  { file: "images/gallery/folder-name/photo-01.jpg", caption: "Optional caption" }
+
+  PASSWORDS: Make them memorable but unique per client
+  e.g. SMITH-WEDDING, JONES2024, ACME-XMAS
+
+════════════════════════════════════════════════════════════ -->
+<script>
+
+const GALLERIES = {
+
+  // ── CLIENT 1 ──────────────────────────────────────────────
+  "SARAH2024": {
+    name:    "Sarah & James — Wedding",
+    date:    "14 June 2024",
+    venue:   "The Grand Hotel, London",
+    expiry:  "14 June 2025",
+    photos: [
+      { file: "images/gallery/sarah-james/photo-01.jpg", caption: "First dance" },
+      { file: "images/gallery/sarah-james/photo-02.jpg", caption: "Group shot" },
+      { file: "images/gallery/sarah-james/photo-03.jpg", caption: "Bridal party" },
+      { file: "images/gallery/sarah-james/photo-04.jpg", caption: "Fun props" },
+      { file: "images/gallery/sarah-james/photo-05.jpg", caption: "" },
+      { file: "images/gallery/sarah-james/photo-06.jpg", caption: "" },
+    ]
+  },
+
+  // ── CLIENT 2 ──────────────────────────────────────────────
+  "ACME-XMAS": {
+    name:    "Acme Corp — Christmas Party",
+    date:    "8 December 2024",
+    venue:   "Shoreditch Loft, London",
+    expiry:  "8 March 2025",
+    photos: [
+      { file: "images/gallery/acme-xmas/photo-01.jpg", caption: "" },
+      { file: "images/gallery/acme-xmas/photo-02.jpg", caption: "" },
+      { file: "images/gallery/acme-xmas/photo-03.jpg", caption: "" },
+      { file: "images/gallery/acme-xmas/photo-04.jpg", caption: "" },
+    ]
+  },
+
+  // ── CLIENT 3 ──────────────────────────────────────────────
+  "EMMA18": {
+    name:    "Emma's 18th Birthday",
+    date:    "22 September 2024",
+    venue:   "Rooftop Bar, Canary Wharf",
+    expiry:  "22 December 2024",
+    photos: [
+      { file: "images/gallery/emma-18th/photo-01.jpg", caption: "" },
+      { file: "images/gallery/emma-18th/photo-02.jpg", caption: "" },
+      { file: "images/gallery/emma-18th/photo-03.jpg", caption: "" },
+    ]
+  },
+
+  // ── ADD MORE CLIENTS BELOW THIS LINE ──────────────────────
+  // Copy and paste the block above, change the details, save the file
+
+};
+
+// ═══════════════════════════════════════════════════════════
+//  YOU DON'T NEED TO EDIT ANYTHING BELOW THIS LINE
+// ═══════════════════════════════════════════════════════════
+
+let currentGallery = null;
+let currentPhotos  = [];
+let lbIndex        = 0;
+let favourites     = new Set();
+
+function checkPassword() {
+  const raw = document.getElementById('pw-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('pw-error');
+  const input  = document.getElementById('pw-input');
+
+  if (!raw) {
+    errEl.textContent = 'Please enter your password.';
+    input.classList.add('error');
+    setTimeout(() => input.classList.remove('error'), 400);
+    return;
+  }
+
+  if (GALLERIES[raw]) {
+    errEl.textContent = '';
+    currentGallery = GALLERIES[raw];
+    currentPhotos  = [...currentGallery.photos];
+    openGallery();
+  } else {
+    errEl.textContent = 'Incorrect password. Please check and try again.';
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 400);
+  }
+}
+
+function openGallery() {
+  document.getElementById('password-screen').style.display = 'none';
+  const gs = document.getElementById('gallery-screen');
+  gs.style.display = 'block';
+
+  document.getElementById('gallery-title').textContent  = currentGallery.name;
+  document.getElementById('gallery-date').textContent   = currentGallery.date;
+  document.getElementById('gallery-venue').textContent  = currentGallery.venue;
+  document.getElementById('gallery-expiry').textContent = currentGallery.expiry;
+  document.getElementById('gallery-count').textContent  = currentGallery.photos.length + ' photos';
+
+  renderGrid(currentPhotos);
+  document.querySelector('.filter-btn.active').click();
+}
+
+function renderGrid(photos) {
+  const grid = document.getElementById('gallery-grid');
+  document.getElementById('photo-count-label').textContent = photos.length + ' photos';
+  grid.innerHTML = '';
+
+  if (photos.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="e-icon">⭐</div>
+        <h3>No favourites yet</h3>
+        <p>Hover over a photo and click ⭐ to save favourites.</p>
+      </div>`;
+    return;
+  }
+
+  photos.forEach((photo, i) => {
+    const realIndex = currentPhotos.indexOf(photo);
+    const isFav = favourites.has(realIndex);
+    const div = document.createElement('div');
+    div.className = 'photo-item';
+    div.dataset.index = realIndex;
+
+    // Try to load actual image; fall back to placeholder
+    div.innerHTML = `
+      <img
+        src="${photo.file}"
+        alt="${photo.caption || 'Photo ' + (i+1)}"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+        onload="this.style.display='block';this.nextElementSibling.style.display='none'"
+        style="display:none"
+      />
+      <div class="photo-placeholder" style="display:flex">
+        <div class="ph-icon">📷</div>
+        <span>Photo ${i+1}</span>
+      </div>
+      <div class="photo-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="photo-overlay">
+        <span class="photo-action" title="View" onclick="openLightbox(${realIndex}, event)">🔍</span>
+        <a class="photo-action" href="${photo.file}" download title="Download" onclick="event.stopPropagation()">⬇</a>
+        <span class="photo-action fav-btn ${isFav ? 'fav-on' : ''}" title="Favourite" onclick="toggleFav(${realIndex}, event)" style="${isFav ? 'border-color:var(--gold);background:var(--gold);color:var(--black)' : ''}">⭐</span>
+      </div>`;
+
+    div.addEventListener('click', () => openLightbox(realIndex, null));
+    grid.appendChild(div);
+  });
+}
+
+function filterPhotos(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (type === 'all') renderGrid(currentPhotos);
+  else renderGrid(currentPhotos.filter((_, i) => favourites.has(i)));
+}
+
+function toggleFav(index, e) {
+  if (e) e.stopPropagation();
+  if (favourites.has(index)) favourites.delete(index);
+  else favourites.add(index);
+  const activeBtn = document.querySelector('.filter-btn.active');
+  filterPhotos(activeBtn.textContent.includes('Fav') ? 'favourite' : 'all', activeBtn);
+}
+
+/* ── LIGHTBOX ── */
+function openLightbox(index, e) {
+  if (e) e.stopPropagation();
+  lbIndex = index;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + currentPhotos.length) % currentPhotos.length;
+  updateLightbox();
+}
+function updateLightbox() {
+  const photo = currentPhotos[lbIndex];
+  const img   = document.getElementById('lb-img');
+  const ph    = document.getElementById('lb-placeholder');
+  const phTxt = document.getElementById('lb-placeholder-text');
+
+  document.getElementById('lb-num').textContent   = lbIndex + 1;
+  document.getElementById('lb-total').textContent = currentPhotos.length;
+
+  img.src = photo.file;
+  img.onload  = () => { img.style.display='block'; ph.style.display='none'; };
+  img.onerror = () => {
+    img.style.display = 'none'; ph.style.display = 'flex';
+    phTxt.textContent = photo.caption || 'Photo ' + (lbIndex + 1);
+  };
+  img.style.display = 'none';
+  ph.style.display  = 'flex';
+  phTxt.textContent = photo.caption || 'Photo ' + (lbIndex + 1);
+}
+function downloadCurrent() {
+  const photo = currentPhotos[lbIndex];
+  const a = document.createElement('a');
+  a.href = photo.file; a.download = photo.file.split('/').pop();
+  a.click();
+}
+
+/* ── DOWNLOAD ALL ── */
+function downloadAll() {
+  const toast   = document.getElementById('dl-progress');
+  const bar     = document.getElementById('dl-bar');
+  const dlText  = document.getElementById('dl-text');
+  const total   = currentPhotos.length;
+  let done = 0;
+  toast.style.display = 'block';
+  bar.style.width = '0%';
+  dlText.textContent = `Downloading ${total} photos one by one…`;
+
+  // Trigger individual downloads with a small delay between each
+  currentPhotos.forEach((photo, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = photo.file;
+      a.download = photo.file.split('/').pop();
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      done++;
+      const pct = Math.round((done / total) * 100);
+      bar.style.width = pct + '%';
+      dlText.textContent = `Downloaded ${done} of ${total} photos`;
+      if (done === total) {
+        dlText.textContent = '✓ All photos downloaded!';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+      }
+    }, i * 600);
+  });
+}
+
+/* ── TOGGLE PW VISIBILITY ── */
+function togglePw() {
+  const input = document.getElementById('pw-input');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+/* ── LOGOUT ── */
+function logout() {
+  currentGallery = null;
+  currentPhotos  = [];
+  favourites.clear();
+  document.getElementById('gallery-screen').style.display = 'none';
+  document.getElementById('password-screen').style.display = 'flex';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').textContent = '';
+}
+
+/* ── KEYBOARD nav in lightbox ── */
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') lbNav(1);
+  if (e.key === 'ArrowLeft')  lbNav(-1);
+  if (e.key === 'Escape')     closeLightbox();
+});
+</script>
+
+</body>
+</html>
