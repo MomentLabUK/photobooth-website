@@ -1,6 +1,6 @@
 <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
   <!-- "Moment" in script italic -->
-  <text x="10" y="50" font-family="Pinyon, script" font-size="60" font-style="italic" font-weight="300" fill="#c9a84c">Moment</text>
+  <text x="10" y="50" font-family="Pinyon, script" font-size="50" font-style="italic" font-weight="300" fill="#c9a84c">Moment</text>
  
   <!-- "LAB" positioned under last 3 letters of Moment (ent) -->
   <text x="125" y="95" font-family="Futura PT, sans-serif" font-size="20" font-weight="bold" fill="#c9a84c" letter-spacing="2">LAB</text>
